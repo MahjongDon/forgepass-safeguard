@@ -16,7 +16,7 @@ const Index = () => {
       )}>
         <header className="text-center mb-8">
           <div className="inline-block rounded-full bg-forgeblue-light px-3 py-1 text-xs font-medium text-forgeblue mb-3">
-            Secure Password Generator
+            Secure Password Generator Demo
           </div>
           <h1 className="text-3xl font-bold tracking-tight mb-2">
             ForgePass
@@ -30,7 +30,7 @@ const Index = () => {
         
         <footer className="mt-10 pt-6 border-t border-border text-center text-xs text-muted-foreground">
           <p>
-            Crafted with precision. Passwords are generated in your browser and never stored or transmitted.
+            Demo version. Passwords are generated in your browser and never stored or transmitted.
           </p>
         </footer>
       </div>

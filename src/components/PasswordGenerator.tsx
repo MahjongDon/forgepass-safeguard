@@ -8,12 +8,8 @@ import { toast } from "sonner";
 import { Copy, RefreshCw, Shield } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-interface PasswordStrengthIndicatorProps {
-  score: number;
-}
-
-// This component shows the password strength
-const PasswordStrengthIndicator = ({ score }: PasswordStrengthIndicatorProps) => {
+// Password strength indicator component
+const PasswordStrengthIndicator = ({ score }: { score: number }) => {
   const getStrengthText = () => {
     if (score <= 1) return 'Weak';
     if (score <= 2) return 'Fair';
@@ -45,6 +41,7 @@ const PasswordStrengthIndicator = ({ score }: PasswordStrengthIndicatorProps) =>
 };
 
 const PasswordGenerator = () => {
+  // State declarations
   const [passwordLength, setPasswordLength] = useState<number>(12);
   const [includeUppercase, setIncludeUppercase] = useState<boolean>(true);
   const [includeNumbers, setIncludeNumbers] = useState<boolean>(true);
@@ -54,25 +51,24 @@ const PasswordGenerator = () => {
   const [strengthScore, setStrengthScore] = useState<number>(0);
 
   // Character sets
-  const lowercaseChars = 'abcdefghijklmnopqrstuvwxyz';
-  const uppercaseChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-  const numberChars = '0123456789';
-  const symbolChars = '!@#$%^&*()_-+=<>?';
+  const charSets = {
+    lowercase: 'abcdefghijklmnopqrstuvwxyz',
+    uppercase: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+    numbers: '0123456789',
+    symbols: '!@#$%^&*()_-+=<>?'
+  };
 
   // Calculate password strength
   const calculatePasswordStrength = (pwd: string) => {
     let score = 0;
     
-    // Length factor
     if (pwd.length >= 8) score += 1;
     if (pwd.length >= 12) score += 1;
     
-    // Character diversity
     if (/[A-Z]/.test(pwd)) score += 0.5;
     if (/[0-9]/.test(pwd)) score += 0.5;
     if (/[^A-Za-z0-9]/.test(pwd)) score += 1;
     
-    // Check for combinations
     const hasMultipleTypes = 
       (/[A-Z]/.test(pwd) ? 1 : 0) +
       (/[a-z]/.test(pwd) ? 1 : 0) +
@@ -84,51 +80,47 @@ const PasswordGenerator = () => {
     return Math.min(4, Math.round(score));
   };
 
-  // Generate password using cryptographically secure random values
+  // Generate password
   const generatePassword = () => {
     setIsGenerating(true);
     
-    // Small delay to show animation
     setTimeout(() => {
       try {
-        // Build character set based on user preferences
-        let chars = lowercaseChars;
-        if (includeUppercase) chars += uppercaseChars;
-        if (includeNumbers) chars += numberChars;
-        if (includeSymbols) chars += symbolChars;
+        // Build character set
+        let chars = charSets.lowercase;
+        if (includeUppercase) chars += charSets.uppercase;
+        if (includeNumbers) chars += charSets.numbers;
+        if (includeSymbols) chars += charSets.symbols;
         
-        // Enforce at least one checkbox selection
-        if (chars === lowercaseChars) {
+        if (chars === charSets.lowercase) {
           toast.error("Please select at least one character type");
           setIsGenerating(false);
           return;
         }
         
-        // Use crypto.getRandomValues for secure randomness
+        // Generate secure random values
         const array = new Uint32Array(passwordLength);
         window.crypto.getRandomValues(array);
         
-        // Map the random values to our character set
+        // Map to characters
         let result = '';
         for (let i = 0; i < passwordLength; i++) {
           result += chars[array[i] % chars.length];
         }
         
-        // Ensure all selected character types are included
+        // Ensure character type requirements are met
         let hasLowercase = /[a-z]/.test(result);
         let hasUppercase = includeUppercase ? /[A-Z]/.test(result) : true;
         let hasNumber = includeNumbers ? /[0-9]/.test(result) : true;
         let hasSymbol = includeSymbols ? /[^A-Za-z0-9]/.test(result) : true;
         
-        // If not all requirements are met, regenerate
         if (!(hasLowercase && hasUppercase && hasNumber && hasSymbol)) {
           generatePassword();
           return;
         }
         
         setPassword(result);
-        const strength = calculatePasswordStrength(result);
-        setStrengthScore(strength);
+        setStrengthScore(calculatePasswordStrength(result));
         
       } catch (error) {
         console.error('Error generating password:', error);
@@ -136,7 +128,7 @@ const PasswordGenerator = () => {
       } finally {
         setIsGenerating(false);
       }
-    }, 400); // Animation delay
+    }, 400);
   };
 
   // Copy password to clipboard
@@ -155,7 +147,7 @@ const PasswordGenerator = () => {
     }
   };
 
-  // Generate a password on initial load
+  // Generate password on initial load
   useEffect(() => {
     generatePassword();
   }, []);
